@@ -1,0 +1,87 @@
+spring:
+  profiles:
+    active: default
+  application:
+    name: Hystrix-Demo
+  main:
+    allow-bean-definition-overriding: true
+
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
+
+logging:
+  facility: Hystrix-Demo
+  domain: Poc
+  level:
+    org.springframework.kafka: ERROR
+    org.apache.http: ERROR
+    org.apache.commons: ERROR
+    hystrixpoc.com.example.demo.external.client.gender.GenderClient: DEBUG
+
+feign:
+  httpclient:
+    enabled: true
+    max-connections: 20 # Total open connections in pool
+    max-connections-per-route: 20 # Max concurrent open connections for single host
+    # connection-timer-repeat: 3000 # Close Expire Connections Limit in MS
+    # time-to-live: 900 # Max lifetime a single connection
+    # time-to-live-unit: seconds # Max lifetime a single connection
+  hystrix:
+    enabled: true
+  client:
+    config:
+      default:
+        loggerLevel: full
+      #gender-api:
+        #connectTimeout: 5000
+        #readTimeout: 5000
+        #loggerLevel: full
+        #errorDecoder: <package>.FeignErrorDecoder
+hystrix:
+  threadpool:
+    default:
+      coreSize: 1000
+      maximumSize: 1000
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: false
+        isolation:
+          strategy: SEMAPHORE
+          semaphore:
+            maxConcurrentRequests: 5000
+      fallback:
+        isolaction:
+          semaphore:
+            maxConcurrentRequests: 5000
+      circuitBreaker:
+        requestVolumeThreshold: 10
+        errorThresholdPercentage: 50
+        sleepWindowInMilliseconds: 10000
+
+server:
+  port: 8080
+
+api:
+  gender-api:
+    host: https://api.genderize.io
+
+management:
+  security:
+    enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+      base-path: /
+
+springdoc:
+  version: '1'
+  api-name: 'Demo Api'
+  api-docs:
+    groups:
+      enabled: true
+    path: /api-docs
